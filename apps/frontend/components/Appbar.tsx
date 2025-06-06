@@ -1,12 +1,27 @@
 "use client";
 import { Button } from "./ui/button";
-
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
 
 export function Appbar() {  
   return (
-    <div className="flex justify-between items-center p-4 bg-zinc-900 w-full">
-      <h1 className="text-2xl font-bold text-white">Pixel Pilot</h1>
-      <Button variant="outline">Signin</Button>
+    <div className="flex justify-between ">
+      <div>Pixel Pilot</div>
+      <div>
+      <SignedOut>
+        <SignInButton />
+        <SignUpButton />
+      </SignedOut>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
+      </div>
     </div>
   );
 }
