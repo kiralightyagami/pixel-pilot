@@ -2,7 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization;
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
   if (!token) {
     res.status(401).json({ message: "Unauthorized" });
     return;
@@ -14,7 +15,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
-  const userId = (decoded as any).payload.sub;
+  const userId = (decoded as any).sub;
   if (!userId) {
     res.status(401).json({ message: "Unauthorized" });
     return;
