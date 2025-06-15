@@ -33,6 +33,7 @@ model Project {
 model Prompt {
   id        String   @id @default(uuid())
   prompt    String
+  type      PromptType
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   project   Project? @relation(fields: [projectId], references: [id])
@@ -40,3 +41,7 @@ model Prompt {
 }
 
 
+enum PromptType {
+  USER
+  SYSTEM
+}
