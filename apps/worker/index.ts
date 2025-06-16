@@ -16,22 +16,22 @@ app.post("/prompt", async (req, res) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     const ai = new GoogleGenAI({ apiKey:GEMINI_API_KEY });
 
-    // await prisma.prompt.create({
-    //     data:{
-    //         content:prompt,
-    //         projectId,
-    //         type:"USER"
-    //     }
-    // })
+    await prisma.prompt.create({
+        data:{
+            content:prompt,
+            projectId,
+            type:"USER"
+        }
+    })
 
-    // const allPrompts = await prisma.prompt.findMany({
-    //     where:{
-    //         projectId,
-    //     },
-    //     orderBy:{
-    //         createdAt:"asc"
-    //     }
-    // })
+    const allPrompts = await prisma.prompt.findMany({
+        where:{
+            projectId,
+        },
+        orderBy:{
+            createdAt:"asc"
+        }
+    })
 
     let text = "";
 
@@ -42,16 +42,16 @@ app.post("/prompt", async (req, res) => {
             systemInstruction: SystemPrompt
         
         },
-        // contents: allPrompts.map((p:any) => ({
-        //     role: p.type === "USER" ? "user" : "assistant",
-        //     parts: [{ text: p.content }]
-        // }))
-        contents: [
-            {
-                role: "user",
-                parts: [{ text: "create a simple animation of a circle that moves from the left to the right" }]
-            }
-        ]
+        contents: allPrompts.map((p:any) => ({
+            role: p.type === "USER" ? "user" : "assistant",
+            parts: [{ text: p.content }]
+        }))
+        // contents: [
+        //     {
+        //         role: "user",
+        //         parts: [{ text: "create a simple animation of a circle that moves from the left to the right" }]
+        //     }
+        // ]
     })
 
     let fullResponse = "";
@@ -84,7 +84,7 @@ app.post("/prompt", async (req, res) => {
         .replace(/<\/code>\n?/g, '')
         .replace(/Here's the code to create.*?Motion Canvas\.\n?/g, '')
         .replace(/The code defines.*?`x` position\.\n?/g, '')
-        .replace(/\n{3,}/g, '\n\n')  // Replace 3 or more newlines with 2
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
 
     
@@ -94,7 +94,7 @@ app.post("/prompt", async (req, res) => {
         .replace(/\*\*Explanation:\*\*\n?/g, '')
         .replace(/<explanation>\n?/g, '')
         .replace(/<\/explanation>\n?/g, '')
-        .replace(/\n{3,}/g, '\n\n')  // Replace 3 or more newlines with 2
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
 
     console.log("\n=== Final Results ===");
@@ -102,6 +102,14 @@ app.post("/prompt", async (req, res) => {
     console.log("Code:", code);
     console.log("Explanation:", explanation);
     console.log("===================");
+
+    await prisma.animation.create({
+        data: {
+            code,
+            explanation,
+            projectId,
+        }
+    })
 
     res.json({ 
         fullResponse, 

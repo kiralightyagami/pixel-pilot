@@ -28,6 +28,7 @@ model Project {
   updatedAt DateTime @updatedAt
   prompts   Prompt[]
   userId    String
+  animations Animation[]
 }
 
 model Prompt {
@@ -38,8 +39,21 @@ model Prompt {
   updatedAt DateTime @updatedAt
   project   Project? @relation(fields: [projectId], references: [id])
   projectId String?
+  animations Animation[]
 }
 
+model Animation {
+  id        String   @id @default(uuid())
+  code      String
+  explanation String
+  videoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+  promptId  String
+  prompt    Prompt? @relation(fields: [promptId], references: [id])
+}
 
 enum PromptType {
   USER
