@@ -1,8 +1,10 @@
 import cors from "cors";
 import express from "express";
-import {prismaClient} from "db";
+import { prisma } from "db/client";
 import  { GoogleGenAI } from "@google/genai";
 import { SystemPrompt } from "./systemPrompt";
+import { Parser } from "./parser";
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
@@ -14,22 +16,24 @@ app.post("/prompt", async (req, res) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     const ai = new GoogleGenAI({ apiKey:GEMINI_API_KEY });
 
-    await prismaClient.prompt.create({
-        data:{
-            content:prompt,
-            projectId,
-            type:"USER"
-        }
-    })
+    // await prisma.prompt.create({
+    //     data:{
+    //         content:prompt,
+    //         projectId,
+    //         type:"USER"
+    //     }
+    // })
 
-    const allPrompts = await prismaClient.prompt.findMany({
-        where:{
-            projectId,
-        },
-        orderBy:{
-            createdAt:"asc"
-        }
-    })
+    // const allPrompts = await prisma.prompt.findMany({
+    //     where:{
+    //         projectId,
+    //     },
+    //     orderBy:{
+    //         createdAt:"asc"
+    //     }
+    // })
+
+    let text = "";
 
     const response = await ai.models.generateContentStream({
         model: "gemini-2.0-flash",
@@ -38,29 +42,73 @@ app.post("/prompt", async (req, res) => {
             systemInstruction: SystemPrompt
         
         },
+        // contents: allPrompts.map((p:any) => ({
+        //     role: p.type === "USER" ? "user" : "assistant",
+        //     parts: [{ text: p.content }]
+        // }))
         contents: [
-            allPrompts.map((p:any) => ({
-                role: p.type === "USER" ? "user" : "assistant",
-                parts: [{ text: p.content }]
-            }))
-        ]
-    }).on("data",(chunk:any)=>{
-        console.log(chunk.text);
-    }).on("text", async (text:any)=>{
-        await prismaClient.prompt.create({
-            data:{
-                content:text,
-                projectId,
-                type:"AI"
+            {
+                role: "user",
+                parts: [{ text: "create a simple animation of a circle that moves from the left to the right" }]
             }
-        })
+        ]
     })
 
+    let fullResponse = "";
+    let code = "";
+    let explanation = "";
+    let fullText = "";
+    
     for await (const chunk of response) {
-        console.log(chunk.text);
+        const text = chunk.text;
+        fullResponse += text;
+        
+        console.log("\n=== New Chunk Received ===");
+        console.log("Raw chunk:", text);
+        console.log("===================");
     }
 
-    res.json({ response });
+    
+    const parser = new Parser(fullResponse);
+    code = parser.getCode();
+    explanation = parser.getExplanation();
+    fullText = parser.getText();
+
+    
+    code = code
+        .replace(/\\n/g, '\n')
+        .replace(/\n\s*\n/g, '\n')
+        .replace(/```typescript\n?/g, '')
+        .replace(/```\n?/g, '')
+        .replace(/<code>\n?/g, '')
+        .replace(/<\/code>\n?/g, '')
+        .replace(/Here's the code to create.*?Motion Canvas\.\n?/g, '')
+        .replace(/The code defines.*?`x` position\.\n?/g, '')
+        .replace(/\n{3,}/g, '\n\n')  // Replace 3 or more newlines with 2
+        .trim();
+
+    
+    explanation = explanation
+        .replace(/\\n/g, '\n')
+        .replace(/\n\s*\n/g, '\n')
+        .replace(/\*\*Explanation:\*\*\n?/g, '')
+        .replace(/<explanation>\n?/g, '')
+        .replace(/<\/explanation>\n?/g, '')
+        .replace(/\n{3,}/g, '\n\n')  // Replace 3 or more newlines with 2
+        .trim();
+
+    console.log("\n=== Final Results ===");
+    console.log("Full Response:", fullResponse);
+    console.log("Code:", code);
+    console.log("Explanation:", explanation);
+    console.log("===================");
+
+    res.json({ 
+        fullResponse, 
+        code, 
+        explanation, 
+        fullText 
+    });
     
     
 
@@ -68,7 +116,7 @@ app.post("/prompt", async (req, res) => {
 })
 
 app.listen(8080, () => {
-    console.log("Worker is running on port 3000");
+    console.log("Worker is running on port 8080");
 });
 
 
