@@ -4,6 +4,7 @@ import { prisma } from "db/client";
 import  { GoogleGenAI } from "@google/genai";
 import { SystemPrompt } from "./systemPrompt";
 import { Parser } from "./parser";
+import { createAnimation } from "./os";
 require("dotenv").config();
 
 const app = express();
@@ -111,12 +112,25 @@ app.post("/prompt", async (req, res) => {
         }
     })
 
-    res.json({ 
-        fullResponse, 
-        code, 
-        explanation, 
-        fullText 
-    });
+    
+    const lastPrompt = allPrompts[allPrompts.length - 1];
+    if (lastPrompt) {
+        const animationResult = await createAnimation(projectId, lastPrompt.id);
+        res.json({ 
+            fullResponse, 
+            code, 
+            explanation, 
+            fullText,
+            videoUrl: animationResult.videoUrl
+        });
+    } else {
+        res.json({ 
+            fullResponse, 
+            code, 
+            explanation, 
+            fullText
+        });
+    }
     
     
 
