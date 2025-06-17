@@ -7,7 +7,7 @@ import { Parser } from "./parser";
 import { createAnimation } from "./os";
 require("dotenv").config();
 
-const app = express();
+export const app = express();
 app.use(cors());
 app.use(express.json());
 

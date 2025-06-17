@@ -1,6 +1,7 @@
 import { Appbar } from "../components/Appbar";
 import { Prompt } from "../components/prompt";
 
+
 export default function Home() {
   return (
     <div className="pt-4">

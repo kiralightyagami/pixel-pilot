@@ -6,10 +6,14 @@ import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { BACKEND_URL } from "@/config";
+import { useRouter } from "next/navigation";
+
+console.log(BACKEND_URL)
 
 export function Prompt() {
   const [prompt, setPrompt] = useState("");
   const { getToken } = useAuth();
+  const router = useRouter();
     return (
         <div className="flex flex-col gap-2">
           <Textarea placeholder="Enter your prompt here" value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full h-20"/>
@@ -23,7 +27,8 @@ export function Prompt() {
                   "Authorization": `Bearer ${token}`
                 } 
               })
-              console.log(response)
+              router.push(`/project/${response.data.projectId}`)
+              setPrompt("") 
             }}>
                 <Send />
             </Button>

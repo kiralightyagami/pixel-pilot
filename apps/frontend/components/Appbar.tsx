@@ -11,7 +11,7 @@ import {
 
 export function Appbar() {  
   return (
-    <div className="flex justify-between ">
+    <div className="flex justify-between pl-4 pr-4">
       <div>Pixel Pilot</div>
       <div>
       <SignedOut>

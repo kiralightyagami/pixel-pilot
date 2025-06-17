@@ -7,13 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
-
 app.use(authMiddleware);
 
-app.post("/projects", async (req, res) => {
+app.post("/project", async (req, res) => {
   const {  prompt } = req.body;
   const userId = req.userId;
   // logic to get name
@@ -27,12 +23,20 @@ app.post("/projects", async (req, res) => {
 
 app.get("/projects", async (req, res) => {
   const userId = req.userId;
-  const projects = await prisma.project.findFirst({
+  const projects = await prisma.project.findMany({
     where: { userId },
   });
   res.json(projects);
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.get("/projects/:id", async (req, res) => {
+
+  const project = await prisma.project.findUnique({
+    where: { id: req.params.id },
+  });
+  res.json(project);
+});
+
+app.listen(5858, () => {
+  console.log("Server is running on port 5858");
 });
