@@ -8,18 +8,22 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
-  const decoded = jwt.verify(token, process.env.JWT_PUBLIC_KEY!,{
-    algorithms: ["RS256"],
-  });
-  if (!decoded) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
+  try {
+    const decoded = jwt.verify(token, process.env.CLERK_JWT_PUBLIC_KEY!, {
+      algorithms: ["HS256"],
+    });
+    if (!decoded) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+    const userId = (decoded as any).sub;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+    req.userId = userId;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: "Invalid token" });
   }
-  const userId = (decoded as any).sub;
-  if (!userId) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-  req.userId = userId;
-  next();
 };

@@ -26,40 +26,35 @@ export default function ProjectPage() {
         });
     }, [projectId]);
 
-    
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chat, streaming]);
 
-   
     const sendPrompt = async (prompt: string) => {
         setStreaming(true);
         setCurrentExplanation("");
         setVideoUrl(null);
         try {
-            
-            const response = await fetch(`${WORKER_URL}/prompt`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt, projectId }),
+            const response = await axios.post(`${WORKER_URL}/prompt`, {
+                prompt,
+                projectId
+            }, {
+                responseType: 'stream'
             });
-            if (response.body && response.headers.get("content-type")?.includes("text/event-stream")) {
-                
-                const reader = response.body.getReader();
+
+            if (response.headers['content-type']?.includes("text/event-stream")) {
                 let explanation = "";
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    const chunk = new TextDecoder().decode(value);
-                    explanation += chunk;
+                for await (const chunk of response.data) {
+                    const text = new TextDecoder().decode(chunk);
+                    explanation += text;
                     setCurrentExplanation(explanation);
                 }
-              
+
                 try {
                     const lastLine = explanation.trim().split("\n").pop();
                     const data = JSON.parse(lastLine || '{}');
                     setVideoUrl(data.videoUrl || null);
-                   
+
                     const lastJsonIndex = explanation.lastIndexOf('{');
                     const explanationText = lastJsonIndex !== -1 ? explanation.slice(0, lastJsonIndex).trim() : explanation;
                     setChat((prev) => [...prev, { prompt, explanation: explanationText }]);
@@ -67,8 +62,7 @@ export default function ProjectPage() {
                     setChat((prev) => [...prev, { prompt, explanation }]);
                 }
             } else {
-               
-                const data = await response.json();
+                const data = response.data;
                 setVideoUrl(data.videoUrl || null);
                 setCurrentExplanation(data.explanation || "");
                 setChat((prev) => [...prev, { prompt, explanation: data.explanation || "" }]);
@@ -80,12 +74,10 @@ export default function ProjectPage() {
         }
     };
 
-   
     useEffect(() => {
-        if (project && project.prompt) {
-            sendPrompt(project.prompt);
+        if (project && project.description) {
+            sendPrompt(project.description);
         }
-        
     }, [project]);
 
     const handleSend = (e: React.FormEvent) => {

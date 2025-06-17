@@ -109,6 +109,7 @@ app.post("/prompt", async (req, res) => {
             code,
             explanation,
             projectId,
+            promptId: allPrompts[allPrompts.length - 1]?.id || undefined
         }
     })
 
