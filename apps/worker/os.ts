@@ -13,23 +13,42 @@ if (ffmpegStatic) {
     ffmpeg.setFfmpegPath(ffmpegStatic);
 }
 
-const s3Client = new S3Client({
-    region: process.env.AWS_REGION || "us-east-1",
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-    },
-});
+
+const hasAWSCredentials = process.env.AWS_ACCESS_KEY_ID && 
+                         process.env.AWS_SECRET_ACCESS_KEY && 
+                         process.env.AWS_S3_BUCKET;
+
+let s3Client: S3Client | null = null;
+
+if (hasAWSCredentials) {
+    s3Client = new S3Client({
+        region: process.env.AWS_REGION || "us-east-1",
+        credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        },
+    });
+}
 
 export const createAnimation = async (projectId: string, promptId: string) => {
     try {
-        const animation = await prisma.animation.findFirst({
+        const animations = await prisma.animation.findMany({
             where: {
                 projectId,
                 promptId,
             },
+            orderBy: {
+                createdAt: 'desc'
+            }
         });
 
+        if (!animations || animations.length === 0) {
+            throw new Error("No animations found");
+        }
+
+       
+        const animation = animations[0];
+        
         if (!animation) {
             throw new Error("Animation not found");
         }
@@ -45,31 +64,45 @@ export const createAnimation = async (projectId: string, promptId: string) => {
         
         await createSimpleAnimation(tempDir, animation.code, outputPath);
 
-        
-        const videoBuffer = await fs.promises.readFile(outputPath);
+        let videoUrl: string;
+
+        if (hasAWSCredentials && s3Client) {
+            
+            try {
+                const videoBuffer = await fs.promises.readFile(outputPath);
+                const s3Key = `animations/${projectId}/${promptId}.mp4`;
+                
+                await s3Client.send(
+                    new PutObjectCommand({
+                        Bucket: process.env.AWS_S3_BUCKET!,
+                        Key: s3Key,
+                        Body: videoBuffer,
+                        ContentType: "video/mp4",
+                    })
+                );
+
+                videoUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${s3Key}`;
+                
+                
+                await fs.promises.rm(tempDir, { recursive: true, force: true });
+            } catch (uploadError) {
+                console.error("S3 upload failed, keeping local file:", uploadError);
+                
+                videoUrl = `file://${outputPath}`;
+            }
+        } else {
+            
+            console.log("No AWS credentials configured, keeping video locally at:", outputPath);
+            videoUrl = `file://${outputPath}`;
+        }
 
         
-        const s3Key = `animations/${projectId}/${promptId}.mp4`;
-        await s3Client.send(
-            new PutObjectCommand({
-                Bucket: process.env.AWS_S3_BUCKET || "",
-                Key: s3Key,
-                Body: videoBuffer,
-                ContentType: "video/mp4",
-            })
-        );
-
-        
-        await fs.promises.rm(tempDir, { recursive: true, force: true });
-
-        
-        const s3Url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
         await prisma.animation.update({
             where: { id: animation.id },
-            data: { videoUrl: s3Url },
+            data: { videoUrl: videoUrl },
         });
 
-        return { success: true, videoUrl: s3Url };
+        return { success: true, videoUrl: videoUrl };
     } catch (error) {
         console.error("Error creating animation:", error);
         throw error;
@@ -78,101 +111,163 @@ export const createAnimation = async (projectId: string, promptId: string) => {
 
 async function createSimpleAnimation(tempDir: string, sceneCode: string, outputPath: string) {
     try {
-        console.log("Rendering Motion Canvas code:", sceneCode);
-        
-        
-        const sceneFilePath = path.join(tempDir, 'scene.ts');
-        await fs.promises.writeFile(sceneFilePath, sceneCode);
+        console.log("Rendering Manim Python code:", sceneCode);
         
        
-        const projectConfig = {
-            name: 'generated-animation',
-            scenes: [sceneFilePath],
-            settings: {
-                size: { x: 1920, y: 1080 },
-                range: [0, 180], 
-                fps: 60,
-            },
-        };
+        const pythonScriptPath = path.join(tempDir, 'scene.py');
+        await fs.promises.writeFile(pythonScriptPath, sceneCode);
         
         
-        const framesDir = path.join(tempDir, 'frames');
-        await fs.promises.mkdir(framesDir, { recursive: true });
-        
-        await renderMotionCanvasToFrames(projectConfig, framesDir);
-        
-        
-        await new Promise<void>((resolve, reject) => {
-            ffmpeg()
-                .input(path.join(framesDir, 'frame_%06d.png'))
-                .inputOptions(['-framerate', '60'])
-                .outputOptions([
-                    '-c:v', 'libx264',
-                    '-pix_fmt', 'yuv420p',
-                    '-y'
-                ])
-                .output(outputPath)
-                .on('end', () => {
-                    console.log(`Animation created at: ${outputPath}`);
-                    resolve();
-                })
-                .on('error', (err: Error) => {
-                    console.error("Error creating video from frames:", err);
-                    reject(err);
-                })
-                .on('progress', (progress: { percent?: number }) => {
-                    console.log('Processing: ' + progress.percent + '% done');
-                })
-                .run();
-        });
+        await renderManim(pythonScriptPath, outputPath, tempDir);
 
     } catch (error) {
-        console.error("Error creating Motion Canvas animation:", error);
+        console.error("Error creating Manim animation:", error);
         throw error;
     }
 }
 
-async function renderMotionCanvasToFrames(projectConfig: any, framesDir: string) {
+async function renderManim(pythonScriptPath: string, outputPath: string, tempDir: string) {
     try {
-        console.log("Attempting to render Motion Canvas project...");
-        
-        
-        const sceneCode = await fs.promises.readFile(projectConfig.scenes[0], 'utf-8');
-        console.log("Motion Canvas code to execute:", sceneCode);
+        console.log("🎬 RENDERING MANIM ANIMATION");
+        console.log("Python script path:", pythonScriptPath);
         
        
-        await createFallbackFrames(framesDir);
+        await renderWithManim(pythonScriptPath, outputPath, tempDir);
         
     } catch (error) {
-        console.error("Error rendering Motion Canvas:", error);
+        console.error("❌ Manim rendering failed:", error);
+        console.log("🔄 Using fallback renderer...");
        
-        await createFallbackFrames(framesDir);
+        await createFallbackVideo(outputPath);
     }
 }
 
-async function createFallbackFrames(framesDir: string) {
+async function renderWithManim(pythonScriptPath: string, outputPath: string, tempDir: string) {
+    return new Promise<void>((resolve, reject) => {
+        const { exec } = require('child_process');
+        
+       
+        const sceneCode = fs.readFileSync(pythonScriptPath, 'utf-8');
+        const classMatch = sceneCode.match(/class\s+(\w+)\s*\(/);
+        const className = classMatch ? classMatch[1] : 'Scene';
+        
+        console.log(`🎨 Rendering Manim scene: ${className}`);
+        console.log(`📁 Working directory: ${tempDir}`);
+        console.log(`📄 Python script: ${pythonScriptPath}`);
+        
+        
+        const manimCommand = `python -m manim -ql "${pythonScriptPath}" ${className}`;
+        
+        console.log(`🔧 Executing: ${manimCommand}`);
+        
+        exec(manimCommand, {
+            cwd: tempDir,
+            timeout: 60000, 
+        }, async (error: Error | null, stdout: string, stderr: string) => {
+            console.log('📤 Manim stdout:', stdout);
+            if (stderr) console.log('⚠️ Manim stderr:', stderr);
+            
+            if (error) {
+                console.error('❌ Manim execution failed:', error);
+                reject(error);
+                return;
+            }
+            
+            try {
+                
+                const sceneName = path.basename(pythonScriptPath, '.py');
+                
+                
+                const searchPaths = [
+                    path.join(tempDir, 'media', 'videos', sceneName, '480p15', `${className}.mp4`),
+                    path.join(tempDir, 'media', 'videos', sceneName, '720p30', `${className}.mp4`),
+                    path.join(tempDir, 'media', 'videos', sceneName, '1080p60', `${className}.mp4`),
+                    path.join(process.cwd(), 'media', 'videos', sceneName, '480p15', `${className}.mp4`),
+                    path.join(process.cwd(), 'apps', 'worker', 'media', 'videos', sceneName, '480p15', `${className}.mp4`)
+                ];
+                
+                let foundVideoPath = null;
+                for (const searchPath of searchPaths) {
+                    console.log(`🔍 Checking: ${searchPath}`);
+                    if (fs.existsSync(searchPath)) {
+                        foundVideoPath = searchPath;
+                        console.log(`✅ Found Manim video: ${foundVideoPath}`);
+                        break;
+                    }
+                }
+                
+                if (foundVideoPath) {
+                    
+                    await fs.promises.copyFile(foundVideoPath, outputPath);
+                    console.log(`📋 Copied video to: ${outputPath}`);
+                    
+                    
+                    const stats = await fs.promises.stat(outputPath);
+                    console.log(`✅ Output file size: ${stats.size} bytes`);
+                    
+                    resolve();
+                } else {
+                    console.error('❌ Could not find Manim output video in any expected location');
+                    
+                   
+                    console.log('📁 Temp directory contents:');
+                    await listDirectoryRecursive(tempDir);
+                    
+                    reject(new Error('Manim output video not found'));
+                }
+            } catch (copyError) {
+                console.error('❌ Error handling Manim output:', copyError);
+                reject(copyError);
+            }
+        });
+    });
+}
+
+
+async function listDirectoryRecursive(dir: string, depth: number = 0) {
+    const indent = '  '.repeat(depth);
+    try {
+        const items = await fs.promises.readdir(dir);
+        for (const item of items) {
+            const fullPath = path.join(dir, item);
+            const stats = await fs.promises.stat(fullPath);
+            if (stats.isDirectory()) {
+                console.log(`${indent}📁 ${item}/`);
+                if (depth < 3) { // Limit recursion depth
+                    await listDirectoryRecursive(fullPath, depth + 1);
+                }
+            } else {
+                console.log(`${indent}📄 ${item} (${stats.size} bytes)`);
+            }
+        }
+    } catch (err) {
+        console.log(`${indent}❌ Error reading directory: ${err}`);
+    }
+}
+
+async function createFallbackVideo(outputPath: string) {
+    console.log("🔄 Creating fallback moving circle animation");
     
-    const tempVideo = path.join(path.dirname(framesDir), 'temp.mp4');
-    
-    await new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
         ffmpeg()
             .input('color=c=white:size=1920x1080:duration=3')
             .inputFormat('lavfi')
             .videoFilter([
-                'drawtext=fontfile=/Windows/Fonts/arial.ttf:text=●:fontsize=100:fontcolor=blue:x=100+1720*t/3:y=490'
-            ])
-            .outputOptions(['-r', '60'])
-            .output(tempVideo)
-            .on('end', async () => {
                 
-                ffmpeg()
-                    .input(tempVideo)
-                    .output(path.join(framesDir, 'frame_%06d.png'))
-                    .on('end', () => resolve())
-                    .on('error', reject)
-                    .run();
+                'drawbox=x=100+1720*t/3-50:y=490:w=100:h=100:color=blue:t=fill',
+               
+                'drawtext=fontfile=/Windows/Fonts/arial.ttf:text="Fallback: Circle Animation":fontsize=24:fontcolor=black:x=50:y=50'
+            ])
+            .outputOptions(['-r', '30'])
+            .output(outputPath)
+            .on('end', () => {
+                console.log("✅ Fallback circle animation created");
+                resolve();
             })
-            .on('error', reject)
+            .on('error', (err: Error) => {
+                console.error("❌ Error creating fallback video:", err);
+                reject(err);
+            })
             .run();
     });
 }
