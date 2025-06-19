@@ -62,6 +62,14 @@ export class Parser {
 
         
         if (!this.code) {
+            const malformedCodeMatch = response.match(/<code>\s*([\s\S]*?)\s*<code>/);
+            if (malformedCodeMatch && malformedCodeMatch[1]) {
+                this.code = malformedCodeMatch[1].trim();
+            }
+        }
+
+        
+        if (!this.code) {
             const codeBlockMatch = response.match(/```(?:typescript)?\n([\s\S]*?)```/);
             if (codeBlockMatch && codeBlockMatch[1]) {
                 this.code = codeBlockMatch[1].trim();
@@ -72,6 +80,14 @@ export class Parser {
         const htmlExplanationMatch = response.match(/<explanation>\s*([\s\S]*?)\s*<\/explanation>/);
         if (htmlExplanationMatch && htmlExplanationMatch[1]) {
             this.explanation = htmlExplanationMatch[1].trim();
+        }
+
+        
+        if (!this.explanation) {
+            const malformedExplanationMatch = response.match(/<explanation>\s*([\s\S]*?)\s*<explanation>/);
+            if (malformedExplanationMatch && malformedExplanationMatch[1]) {
+                this.explanation = malformedExplanationMatch[1].trim();
+            }
         }
 
         

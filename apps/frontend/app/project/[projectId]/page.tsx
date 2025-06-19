@@ -2,95 +2,131 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import { useAuth } from "@clerk/nextjs";
 import { BACKEND_URL, WORKER_URL } from "@/config";
+import { useWebSocketSimple as useWebSocket } from "@/lib/useWebSocketSimple";
 
 export default function ProjectPage() {
     const { projectId } = useParams();
+    const { getToken } = useAuth();
     const [project, setProject] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [chat, setChat] = useState<{ prompt: string; explanation: string }[]>([]);
     const [input, setInput] = useState("");
-    const [videoUrl, setVideoUrl] = useState<string | null>(null);
-    const [streaming, setStreaming] = useState(false);
-    const [currentExplanation, setCurrentExplanation] = useState("");
     const chatEndRef = useRef<HTMLDivElement>(null);
+    
+    
+    const {
+        sendPrompt: wsSendPrompt,
+        isConnected,
+        isProcessing,
+        status,
+        streamingExplanation,
+        finalExplanation,
+        videoUrl,
+        error: wsError
+    } = useWebSocket();
 
     useEffect(() => {
-        axios.get(`${BACKEND_URL}/projects/${projectId}`).then((res) => {
-            setProject(res.data);
-            setLoading(false);
-        }).catch((err) => {
-            setError(err.message);
-            setLoading(false);
-        });
-    }, [projectId]);
+        async function fetchProject() {
+            try {
+                const token = await getToken();
+                const res = await axios.get(`${BACKEND_URL}/projects/${projectId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setProject(res.data);
+                
+                
+                await fetchLatestAnimation();
+                
+                setLoading(false);
+            } catch (err: any) {
+                setError(err.message);
+                setLoading(false);
+            }
+        }
+        fetchProject();
+    }, [projectId, getToken]);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [chat, streaming]);
+    }, [chat, isProcessing, streamingExplanation]);
 
-    const sendPrompt = async (prompt: string) => {
-        setStreaming(true);
-        setCurrentExplanation("");
-        setVideoUrl(null);
-        try {
-            const response = await axios.post(`${WORKER_URL}/prompt`, {
-                prompt,
-                projectId
-            }, {
-                responseType: 'stream'
+    
+    const [lastSentPrompt, setLastSentPrompt] = useState<string>("");
+    
+    
+    useEffect(() => {
+        if (finalExplanation && !isProcessing && lastSentPrompt) {
+            setChat((prev) => {
+                
+                const exists = prev.some(item => item.explanation === finalExplanation);
+                if (!exists) {
+                    return [...prev, { prompt: lastSentPrompt, explanation: finalExplanation }];
+                }
+                return prev;
             });
+            setLastSentPrompt(""); 
+        }
+    }, [finalExplanation, isProcessing, lastSentPrompt]);
 
-            if (response.headers['content-type']?.includes("text/event-stream")) {
-                let explanation = "";
-                for await (const chunk of response.data) {
-                    const text = new TextDecoder().decode(chunk);
-                    explanation += text;
-                    setCurrentExplanation(explanation);
-                }
-
-                try {
-                    const lastLine = explanation.trim().split("\n").pop();
-                    const data = JSON.parse(lastLine || '{}');
-                    setVideoUrl(data.videoUrl || null);
-
-                    const lastJsonIndex = explanation.lastIndexOf('{');
-                    const explanationText = lastJsonIndex !== -1 ? explanation.slice(0, lastJsonIndex).trim() : explanation;
-                    setChat((prev) => [...prev, { prompt, explanation: explanationText }]);
-                } catch {
-                    setChat((prev) => [...prev, { prompt, explanation }]);
-                }
-            } else {
-                const data = response.data;
-                setVideoUrl(data.videoUrl || null);
-                setCurrentExplanation(data.explanation || "");
-                setChat((prev) => [...prev, { prompt, explanation: data.explanation || "" }]);
-            }
+    const fetchLatestAnimation = async () => {
+        try {
+            const token = await getToken();
+            const response = await axios.get(`${BACKEND_URL}/projects/${projectId}/animations/latest`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            
+           
         } catch (err: any) {
-            setError(err.message || "Failed to fetch explanation");
-        } finally {
-            setStreaming(false);
+            
+            if (err.response?.status !== 404) {
+                console.error("Error fetching latest animation:", err);
+            }
         }
     };
 
+    const sendPrompt = (prompt: string) => {
+        if (isConnected && projectId) {
+            wsSendPrompt(prompt, projectId as string);
+        } else {
+            setError('WebSocket not connected');
+        }
+    };
+
+   
     useEffect(() => {
-        if (project && project.description) {
+        const shouldAutoProcess = project && 
+                                 project.description && 
+                                 isConnected && 
+                                 !isProcessing && 
+                                 chat.length === 0; // No previous chat history
+        
+        if (shouldAutoProcess) {
+            console.log('Auto-processing initial project description:', project.description);
+            setLastSentPrompt(project.description);
             sendPrompt(project.description);
         }
-    }, [project]);
+    }, [project, isConnected, isProcessing, chat.length]);
 
     const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim()) return;
-        sendPrompt(input.trim());
+        const prompt = input.trim();
+        setLastSentPrompt(prompt);
+        sendPrompt(prompt);
         setInput("");
     };
 
     return (
         <div style={{ display: "flex", height: "80vh", border: "1px solid #eee", borderRadius: 8, overflow: "hidden", boxShadow: "0 2px 8px #0001", margin: 24 }}>
-            
-            <div style={{ flex: 1, background: "#fafbfc", display: "flex", flexDirection: "column", borderRight: "1px solid #eee" }}>
+                
+                <div style={{ flex: 1, background: "#fafbfc", display: "flex", flexDirection: "column", borderRight: "1px solid #eee" }}>
                 <div style={{ flex: 1, overflowY: "auto", padding: 24 }}>
                     {chat.map((msg, i) => (
                         <div key={i} style={{ marginBottom: 24 }}>
@@ -100,10 +136,16 @@ export default function ProjectPage() {
                             <div style={{ background: "#e8f5e9", padding: 12, borderRadius: 6 }}>{msg.explanation}</div>
                         </div>
                     ))}
-                    {streaming && (
+                    {isProcessing && (
+                        <div style={{ marginBottom: 24 }}>
+                            <div style={{ fontWeight: 600, color: "#333" }}>Status:</div>
+                            <div style={{ background: "#fff3cd", padding: 12, borderRadius: 6, fontStyle: "italic" }}>{status}</div>
+                        </div>
+                    )}
+                    {streamingExplanation && (
                         <div style={{ marginBottom: 24 }}>
                             <div style={{ fontWeight: 600, color: "#333" }}>Explanation (streaming):</div>
-                            <div style={{ background: "#e8f5e9", padding: 12, borderRadius: 6, fontStyle: "italic" }}>{currentExplanation}</div>
+                            <div style={{ background: "#e8f5e9", padding: 12, borderRadius: 6, fontStyle: "italic" }}>{streamingExplanation}</div>
                         </div>
                     )}
                     <div ref={chatEndRef} />
@@ -115,15 +157,16 @@ export default function ProjectPage() {
                         onChange={e => setInput(e.target.value)}
                         placeholder="Type a prompt..."
                         style={{ flex: 1, padding: 10, borderRadius: 6, border: "1px solid #ccc", fontSize: 16 }}
-                        disabled={streaming}
+                        disabled={isProcessing}
                     />
-                    <button type="submit" style={{ marginLeft: 12, padding: "10px 20px", borderRadius: 6, border: "none", background: "#1976d2", color: "#fff", fontWeight: 600, fontSize: 16, cursor: streaming ? "not-allowed" : "pointer" }} disabled={streaming}>Send</button>
+                    <button type="submit" style={{ marginLeft: 12, padding: "10px 20px", borderRadius: 6, border: "none", background: "#1976d2", color: "#fff", fontWeight: 600, fontSize: 16, cursor: isProcessing ? "not-allowed" : "pointer" }} disabled={isProcessing}>Send</button>
                 </form>
             </div>
             
             <div style={{ flex: 1.2, position: "relative", background: "#f7f9fa", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                 {loading && <div>Loading...</div>}
-                {error && <div style={{ color: "red" }}>Error: {error}</div>}
+                {!isConnected && <div style={{ color: "orange", marginBottom: 10 }}>WebSocket disconnected - trying to reconnect...</div>}
+                {(error || wsError) && <div style={{ color: "red" }}>Error: {error || wsError}</div>}
                 {videoUrl ? (
                     <>
                         <video src={videoUrl} controls style={{ width: "90%", maxHeight: 400, borderRadius: 12, boxShadow: "0 2px 8px #0002" }} />
