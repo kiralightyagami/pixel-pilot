@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
 import { Send} from "lucide-react";
 import axios from "axios";
 import { useState } from "react";
@@ -60,28 +59,57 @@ export function Prompt() {
     }
 
     return (
-        <div className="flex flex-col gap-2">
-          <Textarea 
-            placeholder="Enter your prompt here" 
-            value={prompt} 
-            onChange={(e) => setPrompt(e.target.value)} 
-            className="w-full h-20"
-            disabled={isProcessing}
-          />
+        <div className="flex flex-col gap-4">
+          {/* Glass effect textarea container */}
+          <div className="relative">
+            <textarea 
+              placeholder="Enter your prompt here" 
+              value={prompt} 
+              onChange={(e) => setPrompt(e.target.value)} 
+              disabled={isProcessing}
+              className="w-full h-24 px-4 py-3 text-white placeholder-gray-400 bg-white/10 border border-white/20 rounded-xl backdrop-blur-md resize-none outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-300 shadow-lg"
+              style={{
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+              }}
+            />
+            
+            {/* Glass effect submit button positioned inside */}
+            <div className="absolute bottom-3 right-3">
+              <Button 
+                onClick={handleSubmit}
+                disabled={!prompt.trim() || !isConnected || isProcessing}
+                className="bg-white/20 hover:bg-white/30 border border-white/30 backdrop-blur-md rounded-lg px-3 py-2 transition-all duration-300 shadow-lg"
+                style={{
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                }}
+              >
+                {isProcessing ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-white text-sm">Processing...</span>
+                  </div>
+                ) : (
+                  <Send className="w-5 h-5 text-white" />
+                )}
+              </Button>
+            </div>
+          </div>
           
          
           {isProcessing && (
-            <div className="space-y-2 p-3 bg-gray-50 rounded-md">
-              <div className="text-sm font-medium text-blue-600">
+            <div className="space-y-2 p-4 bg-white/10 border border-white/20 rounded-xl backdrop-blur-md shadow-lg">
+              <div className="text-sm font-medium text-blue-300">
                 {status || 'Processing...'}
               </div>
               {streamingExplanation && (
-                <div className="text-xs text-gray-600 max-h-20 overflow-y-auto">
+                <div className="text-xs text-gray-300 max-h-20 overflow-y-auto">
                   {streamingExplanation}
                 </div>
               )}
               {videoUrl && (
-                <div className="text-sm font-medium text-green-600">
+                <div className="text-sm font-medium text-green-300">
                   ✅ Video generated! Redirecting to project...
                 </div>
               )}
@@ -89,26 +117,10 @@ export function Prompt() {
           )}
           
           {wsError && (
-            <div className="text-sm text-red-600 p-2 bg-red-50 rounded">
+            <div className="text-sm text-red-300 p-3 bg-red-500/20 border border-red-400/30 rounded-xl backdrop-blur-md shadow-lg">
               {wsError}
             </div>
           )}
-          
-          <div className="flex justify-end pt-2">
-            <Button 
-              onClick={handleSubmit}
-              disabled={!prompt.trim() || !isConnected || isProcessing}
-            >
-              {isProcessing ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Processing...
-                </div>
-              ) : (
-                <Send />
-              )}
-            </Button>
-          </div>
         </div>
     )
 }
