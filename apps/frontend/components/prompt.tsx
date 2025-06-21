@@ -25,6 +25,7 @@ export function Prompt() {
     videoUrl,
     error: wsError
   } = useWebSocketSimple();
+    
     const handleSubmit = async () => {
       if (!prompt.trim() || !isConnected) return;
       
@@ -51,6 +52,14 @@ export function Prompt() {
       }
     };
 
+    // Handle Enter key press
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
+
     
     if (videoUrl && currentProjectId) {
       setTimeout(() => {
@@ -63,11 +72,12 @@ export function Prompt() {
           {/* Glass effect textarea container */}
           <div className="relative">
             <textarea 
-              placeholder="Enter your prompt here" 
+              placeholder="Enter your prompt here (Press Enter to submit, Shift+Enter for new line)" 
               value={prompt} 
               onChange={(e) => setPrompt(e.target.value)} 
+              onKeyDown={handleKeyPress}
               disabled={isProcessing}
-              className="w-full h-24 px-4 py-3 text-white placeholder-gray-400 bg-white/10 border border-white/20 rounded-xl backdrop-blur-md resize-none outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-300 shadow-lg"
+              className="w-full h-24 px-4 py-3 pr-16 text-white placeholder-gray-400 bg-white/10 border border-white/20 rounded-xl backdrop-blur-md resize-none outline-none focus:border-blue-400/50 focus:bg-white/15 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300 shadow-lg hover:border-white/30"
               style={{
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
@@ -79,7 +89,8 @@ export function Prompt() {
               <Button 
                 onClick={handleSubmit}
                 disabled={!prompt.trim() || !isConnected || isProcessing}
-                className="bg-white/20 hover:bg-white/30 border border-white/30 backdrop-blur-md rounded-lg px-3 py-2 transition-all duration-300 shadow-lg"
+                size="sm"
+                className="bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/90 hover:to-purple-600/90 disabled:from-gray-500/50 disabled:to-gray-500/50 border border-white/30 backdrop-blur-md transition-all duration-300 shadow-lg text-white"
                 style={{
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
@@ -88,15 +99,21 @@ export function Prompt() {
                 {isProcessing ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-white text-sm">Processing...</span>
                   </div>
                 ) : (
-                  <Send className="w-5 h-5 text-white" />
+                  <Send className="w-4 h-4" />
                 )}
               </Button>
             </div>
           </div>
           
+          {/* Connection status indicator */}
+          <div className="flex items-center gap-2 text-xs">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
+            <span className={`${isConnected ? 'text-green-300' : 'text-red-300'}`}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
          
           {isProcessing && (
             <div className="space-y-2 p-4 bg-white/10 border border-white/20 rounded-xl backdrop-blur-md shadow-lg">
@@ -104,7 +121,7 @@ export function Prompt() {
                 {status || 'Processing...'}
               </div>
               {streamingExplanation && (
-                <div className="text-xs text-gray-300 max-h-20 overflow-y-auto">
+                <div className="text-xs text-gray-300 max-h-20 overflow-y-auto custom-scrollbar">
                   {streamingExplanation}
                 </div>
               )}
