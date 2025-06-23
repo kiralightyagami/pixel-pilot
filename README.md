@@ -17,7 +17,6 @@ Pixel Pilot is a cutting-edge platform that transforms text prompts into stunnin
 ### ✨ Key Features
 
 - **🎨 Intelligent Animation Generation**: Convert natural language prompts into mathematical animations
-- **🍎 Apple-Inspired UI**: Sophisticated glassmorphism effects and fluid animations
 - **⚡ Real-time Processing**: WebSocket-powered live updates and progress tracking
 - **🎭 Advanced Animations**: Framer Motion powered transitions and state management
 - **🔄 Scalable Architecture**: Microservices with Redis queue management
@@ -64,7 +63,7 @@ Pixel Pilot is a cutting-edge platform that transforms text prompts into stunnin
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/pixel-pilot.git
+   git clone https://github.com/kiralightyagami/pixel-pilot.git
    cd pixel-pilot
    ```
 
@@ -129,12 +128,7 @@ pixel-pilot/
 - Real-time generation progress tracking
 - High-quality video output in multiple resolutions
 
-### 🌟 UI/UX Excellence
-- **Apple Liquid Glass Effects**: Multi-layered glassmorphism with sophisticated blur and gradients
-- **Smooth Transitions**: Choreographed animations with spring physics
-- **Interactive Elements**: Hover effects with scale, rotation, and color changes
-- **Smart Placeholders**: Cycling example prompts with typing animations
-- **Responsive Design**: Seamless experience across all screen sizes
+
 
 ### 🔄 Real-time Features
 - WebSocket connections for live updates
