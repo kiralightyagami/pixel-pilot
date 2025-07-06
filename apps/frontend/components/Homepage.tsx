@@ -39,32 +39,9 @@ export function Homepage() {
     }
   };
 
-  const backgroundVariants = {
-    hidden: { opacity: 0, scale: 1.05 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { duration: 0.6, ease: [0.23, 1, 0.32, 1] }
-    }
-  };
 
-  const glowVariants = {
-    hidden: { opacity: 0, y: -30 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5, delay: 0.1, ease: [0.23, 1, 0.32, 1] }
-    }
-  };
 
-  const dotPatternVariants = {
-    hidden: { opacity: 0, scale: 1.03 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { duration: 0.8, delay: 0.3, ease: [0.23, 1, 0.32, 1] }
-    }
-  };
+
 
   const contentVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -147,171 +124,155 @@ export function Homepage() {
     }
   };
 
+  
+  const generateStars = () => {
+    return Array.from({ length: 150 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1,
+      opacity: Math.random() * 0.8 + 0.2,
+      animationDelay: Math.random() * 5,
+      animationDuration: Math.random() * 8 + 4
+    }));
+  };
+
+  const stars = generateStars();
+
+  
+  const generateParticles = () => {
+    return Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 8 + 4,
+      color: ['rgba(59, 130, 246, 0.3)', 'rgba(59, 130, 246, 0.2)', 'rgba(99, 102, 241, 0.3)'][Math.floor(Math.random() * 3)],
+      animationDelay: Math.random() * 10,
+      animationDuration: Math.random() * 15 + 10
+    }));
+  };
+
+  const particles = generateParticles();
+
   return (
     <AnimatePresence mode="wait">
       <motion.div 
         key="homepage"
-        className="h-screen relative overflow-hidden flex flex-col"
+        className="h-screen relative overflow-hidden flex flex-col bg-black"
         variants={containerVariants}
         initial="hidden"
         animate={isVisible ? "visible" : "hidden"}
         exit="exit"
       >
         
-        {/* Animated background gradient */}
+        {/* Pitch Black Background */}
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#2a2a4a] pointer-events-none"
-          variants={backgroundVariants}
-          initial="hidden"
-          animate={isVisible ? "visible" : "hidden"}
+          className="absolute inset-0 bg-black pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         />
-        
-        {/* Animated top glow section */}
+
+        {/* Animated Star Field */}
         <motion.div 
-          className="absolute top-0 left-0 right-0 h-96 z-20 pointer-events-none"
-          variants={glowVariants}
-          initial="hidden"
-          animate={isVisible ? "visible" : "hidden"}
+          className="absolute inset-0 z-10 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 1, delay: 0.2 }}
         >
-          {/* Wide background glow */}
-          <motion.div 
-            className="absolute inset-0 w-full h-full pointer-events-none"
+          {stars.map((star) => (
+            <motion.div
+              key={star.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                left: `${star.x}%`,
+                top: `${star.y}%`,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                opacity: star.opacity,
+                boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, ${star.opacity * 0.5})`
+              }}
+              animate={{
+                opacity: [star.opacity, star.opacity * 0.3, star.opacity],
+                scale: [1, 1.2, 1]
+              }}
+              transition={{
+                duration: star.animationDuration,
+                delay: star.animationDelay,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </motion.div>
+
+        {/* Floating Particles */}
+        <motion.div 
+          className="absolute inset-0 z-11 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 1.5, delay: 0.5 }}
+        >
+          {particles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute rounded-full blur-sm"
+              style={{
+                left: `${particle.x}%`,
+                top: `${particle.y}%`,
+                width: `${particle.size}px`,
+                height: `${particle.size}px`,
+                backgroundColor: particle.color,
+              }}
+              animate={{
+                y: [0, -100, 0],
+                x: [0, Math.random() * 50 - 25, 0],
+                opacity: [0.3, 0.8, 0.3],
+                scale: [1, 1.5, 1]
+              }}
+              transition={{
+                duration: particle.animationDuration,
+                delay: particle.animationDelay,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          ))}
+        </motion.div>
+        
+
+
+
+
+
+        
+
+
+        {/* Pulsing Ring Effect */}
+        <motion.div 
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 pointer-events-none"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+          transition={{ duration: 1, delay: 1 }}
+        >
+          <motion.div
+            className="w-full h-full rounded-full border border-blue-400/20"
             style={{
-              background: 'radial-gradient(ellipse 100% 80% at center top, rgba(147, 51, 234, 0.4) 0%, rgba(59, 130, 246, 0.3) 40%, rgba(147, 51, 234, 0.2) 70%, transparent 100%)',
-              filter: 'blur(40px)'
+              boxShadow: '0 0 50px rgba(59, 130, 246, 0.3), inset 0 0 50px rgba(59, 130, 246, 0.1)'
             }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.8, 0.3]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
           />
+        </motion.div>
           
-          {/* Intense central glow */}
-          <motion.div 
-            className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-64 pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse 80% 100% at center top, rgba(59, 130, 246, 0.6) 0%, rgba(147, 51, 234, 0.5) 30%, rgba(59, 130, 246, 0.3) 60%, transparent 90%)',
-              filter: 'blur(30px)'
-            }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          />
-          
-          {/* Core central glow */}
-          <motion.div 
-            className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-48 pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse 70% 100% at center top, rgba(147, 51, 234, 0.8) 0%, rgba(59, 130, 246, 0.7) 40%, rgba(147, 51, 234, 0.4) 70%, transparent 100%)',
-              filter: 'blur(20px)'
-            }}
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.5, delay: 0.25, ease: [0.23, 1, 0.32, 1] }}
-          />
-        </motion.div>
-
-        {/* Animated Eclipse Dot Pattern Overlay */}
-        <motion.div 
-          className="absolute inset-0 z-15 flex items-center justify-center pointer-events-none"
-          variants={dotPatternVariants}
-          initial="hidden"
-          animate={isVisible ? "visible" : "hidden"}
-        >
-          <motion.div 
-            className="w-full max-w-5xl h-full opacity-35 pointer-events-none"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.9) 1px, transparent 0),
-                radial-gradient(circle at 1px 1px, rgba(147, 51, 234, 0.7) 1px, transparent 0),
-                radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.6) 1px, transparent 0)
-              `,
-              backgroundSize: '30px 20px, 45px 30px, 60px 40px',
-              backgroundPosition: '0 0, 15px 10px, 30px 20px',
-              maskImage: 'radial-gradient(ellipse 95% 45% at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 95% 45% at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)'
-            }}
-          />
-        </motion.div>
-
-        {/* Animated Additional eclipse dot layer */}
-        <motion.div 
-          className="absolute inset-0 z-14 flex items-center justify-center pointer-events-none"
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.9, delay: 0.4, ease: [0.23, 1, 0.32, 1] }}
-        >
-          <motion.div 
-            className="w-full max-w-7xl h-full opacity-25 pointer-events-none"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.8) 1px, transparent 0),
-                radial-gradient(circle at 1px 1px, rgba(168, 85, 247, 0.6) 1px, transparent 0)
-              `,
-              backgroundSize: '70px 35px, 100px 50px',
-              backgroundPosition: '35px 17px, 50px 25px',
-              maskImage: 'radial-gradient(ellipse 85% 35% at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 75%, transparent 90%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 85% 35% at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 75%, transparent 90%)'
-            }}
-          />
-        </motion.div>
-
-        {/* Animated Outer eclipse layer */}
-        <motion.div 
-          className="absolute inset-0 z-13 flex items-center justify-center pointer-events-none"
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.1 }}
-          transition={{ duration: 1, delay: 0.5, ease: [0.23, 1, 0.32, 1] }}
-        >
-          <motion.div 
-            className="w-full max-w-8xl h-full opacity-15 pointer-events-none"
-            style={{
-              backgroundImage: `
-                radial-gradient(circle at 1px 1px, rgba(147, 197, 253, 0.9) 1px, transparent 0)
-              `,
-              backgroundSize: '120px 60px',
-              backgroundPosition: '60px 30px',
-              maskImage: 'radial-gradient(ellipse 90% 25% at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.1) 70%, transparent 85%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 90% 25% at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.1) 70%, transparent 85%)'
-            }}
-          />
-        </motion.div>
-        
-        {/* Animated Large curved glow effect */}
-        <motion.div 
-          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-[1400px] h-[700px] pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 100% 100% at center, 
-              rgba(147, 197, 253, 0.8) 0%,
-              rgba(99, 102, 241, 0.6) 20%,
-              rgba(139, 92, 246, 0.4) 40%,
-              rgba(168, 85, 247, 0.2) 60%,
-              transparent 80%
-            )`,
-            filter: 'blur(20px)'
-          }}
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
-          animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.9 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-        />
-        
-        {/* Animated Additional bright center */}
-        <motion.div 
-          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-[800px] h-[400px] pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 100% 100% at center, 
-              rgba(219, 234, 254, 0.9) 0%,
-              rgba(147, 197, 253, 0.7) 30%,
-              rgba(99, 102, 241, 0.5) 60%,
-              transparent 80%
-            )`,
-            filter: 'blur(10px)'
-          }}
-          initial={{ opacity: 0, y: 40, scale: 0.95 }}
-          animate={isVisible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.95 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
-        />
-        
-        {/* Animated Content */}
+          {/* Animated Content */}
         <motion.div 
           className="relative z-30 flex flex-col h-full"
           initial={{ opacity: 0 }}
@@ -319,11 +280,14 @@ export function Homepage() {
           transition={{ duration: 0.4, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
         >
           <motion.div
+            className="flex justify-center px-6 pt-6"
             initial={{ opacity: 0, y: -15 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -15 }}
             transition={{ duration: 0.4, delay: 0.25, ease: [0.23, 1, 0.32, 1] }}
           >
-            <Appbar />
+            <div className="w-full max-w-4xl">
+              <Appbar />
+            </div>
           </motion.div>
           
           {/* Animated Main content */}
@@ -348,7 +312,7 @@ export function Homepage() {
                   >
                     {/* Animated Main heading */}
                     <motion.h1 
-                      className="text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent leading-tight"
+                      className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-200 leading-tight"
                       variants={textVariants}
                       initial="hidden"
                       animate={isVisible ? "visible" : "hidden"}
@@ -358,7 +322,7 @@ export function Homepage() {
                      
                     {/* Animated Project description */}
                     <motion.p 
-                      className="text-base md:text-lg text-gray-300 font-normal tracking-wide max-w-3xl mx-auto leading-relaxed opacity-80"
+                      className="text-base md:text-lg text-gray-400 font-normal tracking-wide max-w-3xl mx-auto leading-relaxed"
                       variants={textVariants}
                       initial="hidden"
                       animate={isVisible ? "visible" : "hidden"}
@@ -368,22 +332,50 @@ export function Homepage() {
                      
                     {/* Animated Subtitle */}
                     <motion.p 
-                      className="text-lg md:text-xl text-gray-200 font-medium tracking-wide"
+                      className="text-lg md:text-xl text-gray-300 font-medium tracking-wide"
                       variants={textVariants}
                       initial="hidden"
                       animate={isVisible ? "visible" : "hidden"}
                     >
                       Create Math Animation with 
-                      <motion.span 
-                        className="text-transparent bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text font-semibold"
+                      <motion.div 
+                        className="inline-block relative"
                         initial={{ opacity: 0, scale: 0.95 }}
-                        animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+                        animate={isVisible ? { 
+                          opacity: 1, 
+                          scale: 1
+                        } : { opacity: 0, scale: 0.95 }}
                         transition={{ 
                           duration: 0.3, 
                           delay: 0.6, 
                           ease: [0.23, 1, 0.32, 1] 
                         }}
-                      > Pixel Pilot</motion.span>
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-blue-500/20 to-blue-400/20 rounded-lg blur-md"
+                          animate={{
+                            opacity: [0.3, 0.7, 0.3],
+                            scale: [1, 1.1, 1]
+                          }}
+                          transition={{
+                            duration: 2.5,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                        <motion.span 
+                          className="relative text-transparent bg-gradient-to-r from-blue-300 via-blue-200 to-blue-400 bg-clip-text font-bold text-xl md:text-2xl px-2"
+                          style={{
+                            textShadow: '0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4)',
+                            filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.8))'
+                          }}
+                          whileHover={{
+                            scale: 1.05,
+                            textShadow: '0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.6)',
+                            transition: { duration: 0.2 }
+                          }}
+                        > Pixel Pilot</motion.span>
+                      </motion.div>
                     </motion.p>
                   </motion.div>
                 )}

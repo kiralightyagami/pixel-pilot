@@ -12,7 +12,7 @@
 
 ## 📖 Overview
 
-Pixel Pilot is a cutting-edge platform that transforms text prompts into stunning mathematical animations using Manim. Built with a modern microservices architecture, it features real-time processing, beautiful Apple-inspired UI animations, and seamless user experience.
+Pixel Pilot is a cutting-edge platform that transforms text prompts into stunning mathematical animations using Manim. Built with a modern microservices architecture, it features real-time processing, and seamless user experience.
 
 ### ✨ Key Features
 
@@ -197,7 +197,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Manim Community](https://www.manim.community/) for the incredible animation engine
-- [Apple Design Team](https://developer.apple.com/design/) for UI/UX inspiration
 - [Framer Motion](https://www.framer.com/motion/) for smooth animations
 - [shadcn/ui](https://ui.shadcn.com/) for beautiful components
 

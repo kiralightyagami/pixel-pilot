@@ -98,11 +98,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
 
   return (
     <div 
-      className="relative w-full max-w-4xl bg-black/20 rounded-xl overflow-hidden border border-white/20 backdrop-blur-md group"
-      style={{
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-      }}
+      className="relative w-full max-w-4xl bg-black/90 rounded-xl overflow-hidden border border-gray-800/50 backdrop-blur-sm shadow-2xl shadow-black/50 group"
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
@@ -115,7 +111,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
       
       {/* Custom Controls Overlay */}
       <div 
-        className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent transition-opacity duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent transition-opacity duration-300 ${
           showControls ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -127,7 +123,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
             max={duration || 0}
             value={currentTime}
             onChange={handleSeek}
-            className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer progress-bar"
+            className="w-full h-1 bg-gray-700/50 rounded-lg appearance-none cursor-pointer progress-bar"
           />
         </div>
         
@@ -137,7 +133,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
             {/* Play/Pause Button */}
             <button
               onClick={togglePlay}
-              className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-200 backdrop-blur-md"
+              className="p-2 bg-gray-800/60 hover:bg-gray-700/70 rounded-full transition-all duration-200 backdrop-blur-sm border border-gray-700/50"
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5 text-white" />
@@ -150,7 +146,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleMute}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
+                className="p-1 hover:bg-gray-800/50 rounded transition-colors"
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX className="w-4 h-4 text-white" />
@@ -165,7 +161,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
                 step="0.1"
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer volume-bar"
+                className="w-16 h-1 bg-gray-700/50 rounded-lg appearance-none cursor-pointer volume-bar"
               />
             </div>
             
@@ -180,7 +176,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
             <Button
               asChild
               size="sm"
-              className="bg-white/20 hover:bg-white/30 border border-white/30 backdrop-blur-md text-white"
+              className="bg-gradient-to-r from-blue-600/80 to-purple-600/80 hover:from-blue-500/90 hover:to-purple-500/90 border border-gray-700/50 backdrop-blur-sm text-white shadow-lg"
             >
               <a
                 href={src}
@@ -195,7 +191,7 @@ export function VideoPlayer({ src, projectId }: VideoPlayerProps) {
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullscreen}
-              className="p-2 hover:bg-white/20 rounded transition-colors"
+              className="p-2 hover:bg-gray-800/50 rounded transition-colors"
             >
               <Maximize className="w-4 h-4 text-white" />
             </button>

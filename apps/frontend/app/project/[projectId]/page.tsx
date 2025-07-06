@@ -148,153 +148,62 @@ export default function ProjectPage() {
 
     return (
         <motion.div 
-            className="h-screen relative overflow-hidden flex flex-col"
+            className="h-screen relative overflow-hidden flex flex-col bg-black"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         >
-            {/* Same beautiful background as home page */}
+            {/* Pitch Black Background */}
             <motion.div 
-                className="absolute inset-0 bg-gradient-to-b from-[#0a0a1a] via-[#1a1a2e] to-[#2a2a4a] pointer-events-none"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                className="absolute inset-0 bg-black pointer-events-none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
             />
-            
-            <motion.div 
-                className="absolute top-0 left-0 right-0 h-96 z-20 pointer-events-none"
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            >
-                {/* Wide background glow */}
-                <div 
-                    className="absolute inset-0 w-full h-full pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(ellipse 100% 80% at center top, rgba(147, 51, 234, 0.4) 0%, rgba(59, 130, 246, 0.3) 40%, rgba(147, 51, 234, 0.2) 70%, transparent 100%)',
-                        filter: 'blur(40px)'
-                    }}
-                />
-                
-                {/* Intense central glow */}
-                <div 
-                    className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-64 pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(ellipse 80% 100% at center top, rgba(59, 130, 246, 0.6) 0%, rgba(147, 51, 234, 0.5) 30%, rgba(59, 130, 246, 0.3) 60%, transparent 90%)',
-                        filter: 'blur(30px)'
-                    }}
-                />
-                
-                {/* Core central glow */}
-                <div 
-                    className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-48 pointer-events-none"
-                    style={{
-                        background: 'radial-gradient(ellipse 70% 100% at center top, rgba(147, 51, 234, 0.8) 0%, rgba(59, 130, 246, 0.7) 40%, rgba(147, 51, 234, 0.4) 70%, transparent 100%)',
-                        filter: 'blur(20px)'
-                    }}
-                />
-            </motion.div>
 
-            {/* Eclipse Dot Pattern Overlay */}
+            {/* Animated Star Field */}
             <motion.div 
-                className="absolute inset-0 z-15 flex items-center justify-center pointer-events-none"
-                initial={{ opacity: 0, scale: 1.03 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.9, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                className="absolute inset-0 z-10 pointer-events-none"
+                initial={{ opacity: 0 }}
+                animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ duration: 1, delay: 0.2 }}
             >
-                <div 
-                    className="w-full max-w-5xl h-full opacity-35 pointer-events-none"
-                    style={{
-                        backgroundImage: `
-                            radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.9) 1px, transparent 0),
-                            radial-gradient(circle at 1px 1px, rgba(147, 51, 234, 0.7) 1px, transparent 0),
-                            radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.6) 1px, transparent 0)
-                        `,
-                        backgroundSize: '30px 20px, 45px 30px, 60px 40px',
-                        backgroundPosition: '0 0, 15px 10px, 30px 20px',
-                        maskImage: 'radial-gradient(ellipse 95% 45% at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 95% 45% at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)'
-                    }}
-                />
+                {Array.from({ length: 100 }, (_, i) => {
+                    const star = {
+                        id: i,
+                        x: Math.random() * 100,
+                        y: Math.random() * 100,
+                        size: Math.random() * 2 + 1,
+                        opacity: Math.random() * 0.8 + 0.2,
+                        animationDelay: Math.random() * 5,
+                        animationDuration: Math.random() * 8 + 4
+                    };
+                    return (
+                        <motion.div
+                            key={star.id}
+                            className="absolute rounded-full bg-white"
+                            style={{
+                                left: `${star.x}%`,
+                                top: `${star.y}%`,
+                                width: `${star.size}px`,
+                                height: `${star.size}px`,
+                                opacity: star.opacity,
+                                boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, ${star.opacity * 0.5})`
+                            }}
+                            animate={{
+                                opacity: [star.opacity, star.opacity * 0.3, star.opacity],
+                                scale: [1, 1.2, 1]
+                            }}
+                            transition={{
+                                duration: star.animationDuration,
+                                delay: star.animationDelay,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        />
+                    );
+                })}
             </motion.div>
-
-            {/* Additional eclipse dot layer with stretched pattern */}
-            <motion.div 
-                className="absolute inset-0 z-14 flex items-center justify-center pointer-events-none"
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            >
-                <div 
-                    className="w-full max-w-7xl h-full opacity-25 pointer-events-none"
-                    style={{
-                        backgroundImage: `
-                            radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.8) 1px, transparent 0),
-                            radial-gradient(circle at 1px 1px, rgba(168, 85, 247, 0.6) 1px, transparent 0)
-                        `,
-                        backgroundSize: '70px 35px, 100px 50px',
-                        backgroundPosition: '35px 17px, 50px 25px',
-                        maskImage: 'radial-gradient(ellipse 85% 35% at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 75%, transparent 90%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 85% 35% at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 75%, transparent 90%)'
-                    }}
-                />
-            </motion.div>
-
-            {/* Outer eclipse layer for extended spread */}
-            <motion.div 
-                className="absolute inset-0 z-13 flex items-center justify-center pointer-events-none"
-                initial={{ opacity: 0, scale: 1.1 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.1, delay: 0.5, ease: [0.23, 1, 0.32, 1] }}
-            >
-                <div 
-                    className="w-full max-w-8xl h-full opacity-15 pointer-events-none"
-                    style={{
-                        backgroundImage: `
-                            radial-gradient(circle at 1px 1px, rgba(147, 197, 253, 0.9) 1px, transparent 0)
-                        `,
-                        backgroundSize: '120px 60px',
-                        backgroundPosition: '60px 30px',
-                        maskImage: 'radial-gradient(ellipse 90% 25% at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.1) 70%, transparent 85%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 90% 25% at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.1) 70%, transparent 85%)'
-                    }}
-                />
-            </motion.div>
-            
-            {/* Large curved glow effect - positioned at bottom center */}
-            <motion.div 
-                className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-[1400px] h-[700px] pointer-events-none"
-                style={{
-                    background: `radial-gradient(ellipse 100% 100% at center, 
-                        rgba(147, 197, 253, 0.8) 0%,
-                        rgba(99, 102, 241, 0.6) 20%,
-                        rgba(139, 92, 246, 0.4) 40%,
-                        rgba(168, 85, 247, 0.2) 60%,
-                        transparent 80%
-                    )`,
-                    filter: 'blur(20px)'
-                }}
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
-            />
-            
-            {/* Additional bright center */}
-            <motion.div 
-                className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-[800px] h-[400px] pointer-events-none"
-                style={{
-                    background: `radial-gradient(ellipse 100% 100% at center, 
-                        rgba(219, 234, 254, 0.9) 0%,
-                        rgba(147, 197, 253, 0.7) 30%,
-                        rgba(99, 102, 241, 0.5) 60%,
-                        transparent 80%
-                    )`,
-                    filter: 'blur(10px)'
-                }}
-                initial={{ opacity: 0, y: 40, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            />
             
             {/* Content */}
             <motion.div 
@@ -304,11 +213,14 @@ export default function ProjectPage() {
                 transition={{ duration: 0.5, delay: 0.6, ease: [0.23, 1, 0.32, 1] }}
             >
                 <motion.div
+                    className="flex justify-center px-6 pt-6"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.7, ease: [0.23, 1, 0.32, 1] }}
                 >
-                    <Appbar />
+                    <div className="w-full max-w-4xl">
+                        <Appbar />
+                    </div>
                 </motion.div>
                 
                 {/* Main content */}
@@ -320,11 +232,7 @@ export default function ProjectPage() {
                 >
                     {/* Chat panel */}
                     <motion.div 
-                        className="flex-1 flex flex-col bg-white/10 border border-white/20 rounded-xl backdrop-blur-md shadow-lg overflow-hidden h-full"
-                        style={{
-                             backdropFilter: 'blur(10px)',
-                             WebkitBackdropFilter: 'blur(10px)',
-                        }}
+                        className="flex-1 flex flex-col bg-black/90 border border-gray-800/50 rounded-xl backdrop-blur-sm shadow-2xl shadow-black/50 overflow-hidden h-full"
                         initial={{ opacity: 0, x: -30, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         transition={{ duration: 0.6, delay: 1.0, ease: [0.23, 1, 0.32, 1], type: "spring", stiffness: 120, damping: 20 }}
@@ -343,7 +251,7 @@ export default function ProjectPage() {
                                         layout
                                     >
                                         <motion.div 
-                                            className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-4 backdrop-blur-md"
+                                            className="bg-blue-600/20 border border-blue-500/30 rounded-lg p-4 backdrop-blur-sm"
                                             whileHover={{ scale: 1.01, borderColor: "rgba(59, 130, 246, 0.5)" }}
                                             transition={{ duration: 0.2 }}
                                         >
@@ -351,7 +259,7 @@ export default function ProjectPage() {
                                             <div className="text-white">{msg.prompt}</div>
                                         </motion.div>
                                         <motion.div 
-                                            className="bg-green-500/20 border border-green-400/30 rounded-lg p-4 backdrop-blur-md"
+                                            className="bg-green-600/20 border border-green-500/30 rounded-lg p-4 backdrop-blur-sm"
                                             whileHover={{ scale: 1.01, borderColor: "rgba(34, 197, 94, 0.5)" }}
                                             transition={{ duration: 0.2 }}
                                         >
@@ -367,7 +275,7 @@ export default function ProjectPage() {
                                     {isProcessing && (
                                         <motion.div 
                                             key="processing-status"
-                                            className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 backdrop-blur-md"
+                                            className="bg-yellow-600/20 border border-yellow-500/30 rounded-lg p-4 backdrop-blur-sm"
                                             initial={{ opacity: 0, y: 20, scale: 0.95 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -380,7 +288,7 @@ export default function ProjectPage() {
                                     {streamingExplanation && (
                                         <motion.div 
                                             key="streaming-explanation"
-                                            className="bg-green-500/20 border border-green-400/30 rounded-lg p-4 backdrop-blur-md mt-3"
+                                            className="bg-green-600/20 border border-green-500/30 rounded-lg p-4 backdrop-blur-sm mt-3"
                                             initial={{ opacity: 0, y: 20, scale: 0.95 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -397,7 +305,7 @@ export default function ProjectPage() {
                         
                         {/* Input form */}
                         <motion.div 
-                            className="border-t border-white/20 p-4"
+                            className="border-t border-gray-800/40 p-4"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: 1.2, ease: [0.23, 1, 0.32, 1] }}
@@ -409,11 +317,7 @@ export default function ProjectPage() {
                                     onChange={e => setInput(e.target.value)}
                                     onKeyDown={handleKeyPress}
                                     placeholder="Type a prompt... (Press Enter to send, Shift+Enter for new line)"
-                                    className="flex-1 px-4 py-3 text-white placeholder-gray-400 bg-white/10 border border-white/20 rounded-lg backdrop-blur-md resize-none outline-none focus:border-blue-400/50 focus:bg-white/15 focus:ring-2 focus:ring-blue-400/20 transition-all duration-300"
-                                    style={{
-                                        backdropFilter: 'blur(10px)',
-                                        WebkitBackdropFilter: 'blur(10px)',
-                                    }}
+                                    className="flex-1 px-4 py-3 text-white placeholder-gray-500 bg-black/80 border border-gray-800/50 rounded-lg backdrop-blur-sm resize-none outline-none focus:border-blue-500/50 focus:bg-black/90 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
                                     disabled={isProcessing}
                                     whileFocus={{ scale: 1.01 }}
                                     transition={{ duration: 0.2 }}
@@ -426,11 +330,7 @@ export default function ProjectPage() {
                                     <Button
                                         type="submit"
                                         disabled={isProcessing || !input.trim()}
-                                        className="bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/90 hover:to-purple-600/90 disabled:from-gray-500/50 disabled:to-gray-500/50 border border-white/30 backdrop-blur-md transition-all duration-300 shadow-lg text-white"
-                                        style={{
-                                            backdropFilter: 'blur(10px)',
-                                            WebkitBackdropFilter: 'blur(10px)',
-                                        }}
+                                        className="bg-gradient-to-r from-blue-600/80 to-purple-600/80 hover:from-blue-500/90 hover:to-purple-500/90 disabled:from-gray-600/50 disabled:to-gray-600/50 border border-gray-700/50 backdrop-blur-sm transition-all duration-300 shadow-lg text-white"
                                     >
                                         {isProcessing ? (
                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -443,17 +343,17 @@ export default function ProjectPage() {
 
                             {/* Connection status */}
                             <motion.div 
-                                className="flex items-center gap-2 text-xs mt-3"
+                                className="flex items-center gap-2 text-xs mt-3 px-3 py-2 rounded-xl bg-black/80 backdrop-blur-sm border border-gray-800/40"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.3, delay: 1.4 }}
                             >
-                                <motion.div 
-                                    className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}
-                                    animate={{ scale: isConnected ? [1, 1.2, 1] : 1 }}
-                                    transition={{ duration: 2, repeat: Infinity, repeatType: "loop" }}
-                                />
-                                <span className={`${isConnected ? 'text-green-300' : 'text-red-300'}`}>
+                                <div className={`w-2 h-2 rounded-full ${
+                                    isConnected 
+                                        ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' 
+                                        : 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.5)]'
+                                }`}></div>
+                                <span className={`${isConnected ? 'text-green-300' : 'text-red-300'} font-medium`}>
                                     {isConnected ? 'Connected' : 'Disconnected'}
                                 </span>
                             </motion.div>
@@ -462,103 +362,73 @@ export default function ProjectPage() {
                     
                     {/* Video panel */}
                     <motion.div 
-                        className="flex-1 flex flex-col items-center justify-center bg-white/10 border border-white/20 rounded-xl backdrop-blur-md shadow-lg relative h-full"
-                        style={{
-                             backdropFilter: 'blur(10px)',
-                             WebkitBackdropFilter: 'blur(10px)',
-                        }}
+                        className="w-1/2 bg-black/90 border border-gray-800/50 rounded-xl backdrop-blur-sm shadow-2xl shadow-black/50 overflow-hidden h-full"
                         initial={{ opacity: 0, x: 30, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         transition={{ duration: 0.6, delay: 1.1, ease: [0.23, 1, 0.32, 1], type: "spring", stiffness: 120, damping: 20 }}
                     >
-                        <AnimatePresence mode="wait">
-                            {loading && (
-                                <motion.div 
-                                    key="loading"
-                                    className="text-white text-lg"
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    Loading...
-                                </motion.div>
-                            )}
+                        <div className="p-4 h-full flex flex-col">
+                            <motion.h2 
+                                className="text-xl font-semibold text-gray-200 mb-4"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: 1.3 }}
+                            >
+                                Generated Video
+                            </motion.h2>
                             
-                            {!isConnected && (
-                                <motion.div 
-                                    key="disconnected"
-                                    className="text-orange-300 mb-4"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    WebSocket disconnected - trying to reconnect...
-                                </motion.div>
-                            )}
-                            
-                            {(error || wsError) && (
-                                <motion.div 
-                                    key="error"
-                                    className="text-red-300 mb-4"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    Error: {error || wsError}
-                                </motion.div>
-                            )}
-                            
-                            {videoUrl ? (
-                                <motion.div
-                                    key="video-player"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-                                    className="w-full h-full"
-                                >
-                                    <VideoPlayer src={videoUrl} projectId={projectId as string} />
-                                </motion.div>
-                            ) : (
-                                <motion.div 
-                                    className="flex flex-col items-center justify-center h-full space-y-4"
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.4 }}
-                                    key="no-video"
-                                >
+                            <motion.div 
+                                className="flex-1 flex items-center justify-center"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.4, delay: 1.4 }}
+                            >
+                                {loading ? (
                                     <motion.div 
-                                        className="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center border border-white/20"
-                                        whileHover={{ scale: 1.05, borderColor: "rgba(255, 255, 255, 0.3)" }}
+                                        className="text-center text-gray-400"
+                                        animate={{ opacity: [0.5, 1, 0.5] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    >
+                                        <div className="w-8 h-8 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                        Loading project...
+                                    </motion.div>
+                                ) : error ? (
+                                    <motion.div 
+                                        className="text-center text-red-300 bg-red-900/20 rounded-lg p-6 border border-red-800/30"
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <svg className="w-16 h-16 text-white/50" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                        <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                         </svg>
+                                        Error: {error}
                                     </motion.div>
+                                ) : videoUrl ? (
                                     <motion.div 
-                                        className="text-gray-300 text-lg font-medium"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: 0.1 }}
+                                        className="w-full h-full"
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.5 }}
                                     >
-                                        No video generated yet
+                                        <VideoPlayer src={videoUrl} projectId={projectId as string} />
                                     </motion.div>
+                                ) : (
                                     <motion.div 
-                                        className="text-gray-400 text-sm text-center max-w-md"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: 0.2 }}
+                                        className="text-center text-gray-400"
+                                        animate={{ opacity: [0.7, 1, 0.7] }}
+                                        transition={{ duration: 3, repeat: Infinity }}
                                     >
-                                        Your animation will appear here once the generation process is complete.
+                                        <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        No video generated yet.
+                                        <br />
+                                        <span className="text-sm text-gray-500">Send a prompt to generate your animation!</span>
                                     </motion.div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                )}
+                            </motion.div>
+                        </div>
                     </motion.div>
                 </motion.div>
             </motion.div>

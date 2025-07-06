@@ -55,24 +55,22 @@ export function Sidebar() {
       }}
     >
       
-      {/* Enhanced hover trigger bar */}
+      {/* Hover trigger bar */}
       <motion.div 
-        className="absolute left-0 top-0 h-full bg-white/20 border-r border-white/20 backdrop-blur-md shadow-lg" 
+        className="absolute left-0 top-0 h-full bg-gray-800/60 border-r border-gray-700/50 backdrop-blur-sm shadow-lg" 
         style={{ 
           width: 8, 
           zIndex: 60,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
         }}
         whileHover={{ 
-          backgroundColor: "rgba(255, 255, 255, 0.35)",
+          backgroundColor: "rgba(55, 65, 81, 0.8)",
           scale: 1.2,
           x: 2
         }}
         animate={{
           boxShadow: open 
             ? "0 0 20px rgba(59, 130, 246, 0.3)" 
-            : "0 4px 12px rgba(0, 0, 0, 0.1)"
+            : "0 4px 12px rgba(0, 0, 0, 0.3)"
         }}
         transition={{ duration: 0.3 }}
         layoutId="sidebar-trigger"
@@ -81,11 +79,9 @@ export function Sidebar() {
       <AnimatePresence mode="wait">
         {mounted && (
           <motion.div
-            className="h-full bg-white/10 border-r border-white/20 backdrop-blur-md shadow-2xl flex flex-col absolute left-0 top-0 z-50 overflow-hidden"
+            className="h-full bg-black/90 border-r border-gray-800/50 backdrop-blur-sm shadow-2xl shadow-black/50 flex flex-col absolute left-0 top-0 z-50 overflow-hidden"
             style={{ 
               width: 300,
-              backdropFilter: 'blur(15px)',
-              WebkitBackdropFilter: 'blur(15px)',
             }}
             initial={{ 
               x: -300, 
@@ -110,9 +106,9 @@ export function Sidebar() {
             }}
             layoutId="sidebar-main"
           >
-            {/* Enhanced Header with entrance animation */}
+            {/* Header */}
             <motion.div 
-              className="flex-shrink-0 px-6 py-6 border-b border-white/10"
+              className="flex-shrink-0 px-6 py-6 border-b border-gray-800/40"
               initial={{ y: -30, opacity: 0 }}
               animate={{ 
                 y: open ? 0 : -30, 
@@ -125,10 +121,10 @@ export function Sidebar() {
               }}
             >
               <motion.h1 
-                className="text-xl font-bold text-white drop-shadow-lg bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent"
+                className="text-xl font-bold text-gray-200"
                 whileHover={{ 
                   scale: 1.05,
-                  textShadow: "0 0 20px rgba(59, 130, 246, 0.5)"
+                  color: "rgb(147 197 253)"
                 }}
                 transition={{ duration: 0.2 }}
               >
@@ -164,9 +160,9 @@ export function Sidebar() {
                     ease: [0.23, 1, 0.32, 1]
                   }}
                 >
-                  <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">PROJECTS</div>
+                  <div className="text-xs text-gray-500 font-semibold uppercase tracking-wider">PROJECTS</div>
                   <motion.button 
-                    className="text-gray-400 hover:text-blue-300 transition-colors duration-200"
+                    className="text-gray-500 hover:text-blue-300 transition-colors duration-200"
                     whileHover={{ 
                       scale: 1.3, 
                       rotate: 90,
@@ -199,7 +195,7 @@ export function Sidebar() {
                     ease: [0.23, 1, 0.32, 1]
                   }}
                 >
-                  {/* Enhanced Loading state */}
+                  {/* Loading state */}
                   <AnimatePresence>
                     {loading && (
                       <motion.div 
@@ -220,7 +216,7 @@ export function Sidebar() {
                         }}
                       >
                         <motion.div 
-                          className="w-4 h-4 border-2 border-white/50 border-t-transparent rounded-full mr-3"
+                          className="w-4 h-4 border-2 border-gray-400/50 border-t-transparent rounded-full mr-3"
                           animate={{ rotate: 360 }}
                           transition={{ 
                             duration: 1, 
@@ -233,11 +229,11 @@ export function Sidebar() {
                     )}
                   </AnimatePresence>
                   
-                  {/* Enhanced Error state */}
+                  {/* Error state */}
                   <AnimatePresence>
                     {error && (
                       <motion.div 
-                        className="flex items-center px-4 py-3 text-red-300 bg-red-500/10 rounded-lg border border-red-400/20"
+                        className="flex items-center px-4 py-3 text-red-300 bg-red-900/20 rounded-lg border border-red-800/30"
                         initial={{ opacity: 0, scale: 0.8, rotateX: -90 }}
                         animate={{ opacity: 1, scale: 1, rotateX: 0 }}
                         exit={{ 
@@ -268,7 +264,7 @@ export function Sidebar() {
                     )}
                   </AnimatePresence>
                   
-                  {/* Enhanced Empty state */}
+                  {/* Empty state */}
                   <AnimatePresence>
                     {!loading && !error && projects.length === 0 && (
                       <motion.div 
@@ -303,7 +299,7 @@ export function Sidebar() {
                     )}
                   </AnimatePresence>
                   
-                  {/* Enhanced animated project list */}
+                  {/* Project list */}
                   <AnimatePresence>
                     {!loading && !error && projects.map((project, idx) => (
                       <motion.div
@@ -343,11 +339,11 @@ export function Sidebar() {
                         onHoverStart={() => setHoveredProject(project.id || idx.toString())}
                         onHoverEnd={() => setHoveredProject(null)}
                       >
-                        {/* Enhanced animated background for hover */}
+                        {/* Hover background */}
                         <AnimatePresence>
                           {hoveredProject === (project.id || idx.toString()) && (
                             <motion.div
-                              className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg"
+                              className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-500/20 rounded-lg"
                               layoutId="project-hover-bg"
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
@@ -362,7 +358,7 @@ export function Sidebar() {
                           )}
                         </AnimatePresence>
 
-                        {/* Enhanced animated border */}
+                        {/* Left border indicator */}
                         <motion.div
                           className="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-400 rounded-full"
                           initial={{ scaleY: 0, opacity: 0 }}
@@ -385,7 +381,7 @@ export function Sidebar() {
                           className="relative z-10 flex items-center px-4 py-3 text-white rounded-lg transition-all duration-300 group"
                         >
                           <motion.svg 
-                            className="w-5 h-5 mr-3 text-gray-300 group-hover:text-blue-300 transition-colors duration-300" 
+                            className="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-300 transition-colors duration-300" 
                             fill="none" 
                             stroke="currentColor" 
                             viewBox="0 0 24 24"
@@ -418,7 +414,7 @@ export function Sidebar() {
                             {project.description || `Project ${idx + 1}`}
                           </motion.span>
                           <motion.svg 
-                            className="w-4 h-4 ml-auto text-gray-400 group-hover:text-blue-300 transition-all duration-300" 
+                            className="w-4 h-4 ml-auto text-gray-500 group-hover:text-blue-300 transition-all duration-300" 
                             fill="none" 
                             stroke="currentColor" 
                             viewBox="0 0 24 24"
