@@ -4,7 +4,7 @@
 
 ## 🎥 Demo
 
-[![Demo Video](https://img.shields.io/badge/🎬-Watch%20Demo-blue?style=for-the-badge)](https://vimeo.com/1095386478/cd09b6a164?share=copy)
+[![Demo Video](https://img.shields.io/badge/🎬-Watch%20Demo-blue?style=for-the-badge)](https://youtu.be/Aom0Lr_5mPY)
 
 ## 🏗️ Architecture
 
