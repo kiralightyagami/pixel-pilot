@@ -21,7 +21,6 @@ Pixel Pilot is a cutting-edge platform that transforms text prompts into stunnin
 - **🎭 Advanced Animations**: Framer Motion powered transitions and state management
 - **🔄 Scalable Architecture**: Microservices with Redis queue management
 - **📱 Responsive Design**: Beautiful UI that works across all devices
-- **🎯 Smart Placeholders**: Dynamic typing animations with example prompts
 
 ## 🛠️ Tech Stack
 
@@ -209,4 +208,4 @@ If you have any questions or need help, please:
 
 ---
 
-**Built with ❤️ by the Pixel Pilot Team**
+**Built with ❤️ by the Asvin Shrivas**
